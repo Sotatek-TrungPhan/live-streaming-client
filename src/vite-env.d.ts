@@ -3,6 +3,7 @@
 
 interface ImportMetaEnv {
     readonly VITE_APP_LIFF_APP_ID: string
+    readonly VITE_APP_API_URL: string
     // more env variables...
   }
   

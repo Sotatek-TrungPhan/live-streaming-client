@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { axiosInstance } from "../services/config";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Flex, Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 
@@ -10,62 +10,82 @@ export const Information = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { liffId } = useParams<{ liffId: string }>(); // Add type for useParams
 
-  const getProfile = async (accessToken: string) => {
+  const getProfile = useCallback(async () => {
+    if (!accessToken || !user?.userId) {
+      console.error("Access token or user ID is missing");
+      return;
+    }
     try {
-      const res = await axiosInstance.get(`/member/${user?.userId}`, {
+      const res = await axiosInstance.get(`/member/${user.userId}`, {
         headers: {
-          Authorization: `Bearer ${accessToken}`, // Fixed template string
+          Authorization: `Bearer ${accessToken}`,
         },
       });
-      setUserInfo(res.data); // Store user info
+      setUserInfo(res.data);
     } catch (err) {
-      console.error(err); // Log error to console
+      console.error("Failed to fetch user profile:", err);
     }
-  };
+  }, [accessToken, user?.userId]);
 
   useEffect(() => {
-    if (userInfo && !userInfo?.isRegistered) {
-        navigate(`/register/${liffId}`); // Fixed template string
-      }
-    if (accessToken && user) {
-      getProfile(accessToken).finally(() => setLoading(false));
-    }
-   
-  }, [accessToken, liffId, userInfo]); // Added user?.isRegistered to dependencies
+    let isMounted = true;
 
-  return loading ? (
-    <div
-      style={{
+    const fetchData = async () => {
+      if (accessToken && user?.userId) {
+        await getProfile();
+      }
+      if (isMounted) {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accessToken, user?.userId, getProfile]);
+
+  useEffect(() => {
+    if (userInfo && !userInfo.isRegistered) {
+      navigate('/register');
+    }
+  }, [userInfo, navigate]);
+
+  if (loading) {
+    return (
+      <div style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         height: "100vh",
-      }}
-    >
-      <Flex align="center" gap="middle">
-        <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
-      </Flex>
-    </div>
-  ) : (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh",
-      }}
-    >
+      }}>
+        <Flex align="center" gap="middle">
+          <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
+        </Flex>
+      </div>
+    );
+  }
+
+  if (!userInfo) {
+    return <div>No user information available.</div>;
+  }
+
+  return (
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "100vh",
+    }}>
       <h1>Information</h1>
-      <p>
-        User: {userInfo?.firstName} {userInfo?.lastName}
-      </p>
-      <p>Email: {userInfo?.email}</p>
-      <p>Telephone: {userInfo?.telephone}</p>
-      <p>Address: {userInfo?.address}</p>
+      <p>User: {userInfo.firstName} {userInfo.lastName}</p>
+      <p>Email: {userInfo.email}</p>
+      <p>Telephone: {userInfo.telephone}</p>
+      <p>Address: {userInfo.address}</p>
     </div>
   );
 };

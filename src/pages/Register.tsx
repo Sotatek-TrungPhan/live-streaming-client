@@ -1,8 +1,8 @@
 import { Button, Flex, Form, Input, Spin } from "antd";
 import { useAuth } from "../hooks/useAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { axiosInstance } from "../services/config";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { LoadingOutlined } from "@ant-design/icons";
 
 const validateMessages = {
@@ -21,32 +21,57 @@ export const Register = () => {
   const { user, accessToken } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const { liffId } = useParams();
-
-  const getProfile = async (accessToken: string) => {
-    const res = await axiosInstance.get(`member/${user?.userId}`, {
+  
+  const getProfile = useCallback(async () => {
+    if (!user?.userId || !accessToken) {
+      throw new Error("User ID or access token is missing");
+    }
+    const res = await axiosInstance.get(`member/${user.userId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
     return res.data;
-  };
+  }, [user?.userId, accessToken]);
 
   useEffect(() => {
-    (async () => {
-      if (accessToken) {
-        const res: any = await getProfile(accessToken).finally(() => setLoading(false));
-        if (res.isRegistered) {
-          navigate(`/information/${liffId}`);
+    let isMounted = true;
+
+    const checkRegistration = async () => {
+      if (!user?.userId || !accessToken) {
+        return;
+      }
+
+      try {
+        const res = await getProfile();
+        if (res.isRegistered && isMounted) {
+          navigate(`/information`);
+          return; // Early return to avoid further processing
+        }
+      } catch (error) {
+        console.error("Failed to get profile", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false); // Only set loading to false once
         }
       }
-    })();
-  }, [accessToken]);
+    };
+
+    checkRegistration();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.userId, accessToken, getProfile, navigate]);
 
   const onFinish = async (values: any) => {
+    if (!user?.userId || !accessToken) {
+      console.error("User ID or access token is missing");
+      return;
+    }
     try {
       await axiosInstance.patch(
-        `member/${user?.userId}`,
+        `member/${user.userId}`,
         { ...values },
         {
           headers: {
@@ -54,27 +79,29 @@ export const Register = () => {
           },
         }
       );
-      navigate(`/information/${liffId}`);
+      navigate(`/information`);
     } catch (error) {
       console.error("Update failed", error);
     }
   };
 
-  return loading ? (
-    <div
-      style={{
+  if (loading) {
+    return (
+      <div style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         height: "100vh",
-      }}
-    >
-      <Flex align="center" gap="middle">
-        <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
-      </Flex>
-    </div>
-  ) : (
+      }}>
+        <Flex align="center" gap="middle">
+          <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
+        </Flex>
+      </div>
+    );
+  }
+
+  return (
     <Form
       {...layout}
       name="nest-messages"

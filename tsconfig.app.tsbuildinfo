@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/LiveStream.tsx","./src/main.tsx","./src/vite-env.d.ts"],"errors":true,"version":"5.6.3"}
+{"root":["./src/App.tsx","./src/main.tsx","./src/router.tsx","./src/vite-env.d.ts","./src/constants/index.ts","./src/contexts/AuthContext.tsx","./src/hooks/useAuth.ts","./src/pages/Information.tsx","./src/pages/Register.tsx","./src/services/config.ts","./src/types/user-info.ts"],"version":"5.6.3"}
