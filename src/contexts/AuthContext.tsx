@@ -4,6 +4,7 @@ import { UserInfo } from "../types/user-info";
 import liff from "@line/liff";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Flex, Spin } from "antd";
+import { useParams } from "react-router-dom";
 
 type AuthContextType = {
   user: UserInfo | null;
@@ -27,26 +28,23 @@ export const AuthContext = createContext<AuthContextType>({
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const [user, setUser] = useState<UserInfo | null>(null);
-  console.log('user:',user)
   const [authStatus, setAuthStatus] = useState<
     (typeof AUTH_STATUS)[keyof typeof AUTH_STATUS]
   >(AUTH_STATUS.UNAUTHORIZED);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  const liffId = import.meta.env.VITE_APP_LIFF_APP_ID;
+  const { liffId } = useParams();
 
   useEffect(() => {
     const initializeLiff = async () => {
-      console.log("Initializing LIFF with ID:", liffId);
       if (!liffId) {
-        console.error("LIFF ID is not defined");
         setAuthStatus(AUTH_STATUS.UNAUTHORIZED);
         return;
       }
 
       try {
-        await liff.init({ liffId });
+        await liff.init({ liffId: "2006450131-PMgV4ELa" });
         console.log("LIFF initialized successfully");
 
         if (!liff.isLoggedIn()) {
@@ -68,12 +66,11 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const handleLineLogin = async () => {
     try {
       const profile = await liff.getProfile();
-      console.log("Retrieved profile:", profile);
       setUser(profile as unknown as UserInfo);
       setAccessToken(liff.getAccessToken());
       setAuthStatus(AUTH_STATUS.AUTHORIZED);
     } catch (error) {
-      console.error("Error during LINE login", error);
+      console.error("Failed to get profile", error);
       setAuthStatus(AUTH_STATUS.UNAUTHORIZED);
     }
   };
@@ -110,11 +107,10 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
             alignItems: "center",
             justifyContent: "center",
             height: "100vh",
-          }}>
+          }}
+        >
           <Flex align="center" gap="middle">
-            <Spin
-              indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />}
-            />
+            <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
           </Flex>
         </div>
       ) : (

@@ -11,6 +11,7 @@ const validateMessages = {
     email: "${label} is not a valid email!",
   },
 };
+
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 16 },
@@ -20,12 +21,12 @@ export const Register = () => {
   const { user, accessToken } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  //   const { liffId } = useParams();
-  const liffId = import.meta.env.VITE_APP_LIFF_APP_ID;
+  const { liffId } = useParams();
+
   const getProfile = async (accessToken: string) => {
-    const res = await axiosInstance.get(`/member/${user?.userId}`, {
+    const res = await axiosInstance.get(/member/${user?.userId}, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: Bearer ${accessToken},
       },
     });
     return res.data;
@@ -33,32 +34,30 @@ export const Register = () => {
 
   useEffect(() => {
     (async () => {
-      if (accessToken && user) {
-        const res: any = await getProfile(accessToken).finally(()=>setLoading(false));
-        console.log("res:", res);
+      if (accessToken) {
+        const res: any = await getProfile(accessToken).finally(() => setLoading(false));
         if (res.isRegistered) {
-          navigate(`/information`);
+          navigate(/information/${liffId});
         }
       }
     })();
-  }, [user]);
+  }, [accessToken]);
 
-  const onFinish = (values: any) => {
-    axiosInstance
-      .patch(
-        `/member/${user?.userId}`,
-        {
-          ...values,
-        },
+  const onFinish = async (values: any) => {
+    try {
+      await axiosInstance.patch(
+        /member/${user?.userId},
+        { ...values },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: Bearer ${accessToken},
           },
         }
-      )
-      .then((res) => {
-        navigate(`/information`);
-      });
+      );
+      navigate(/information/${liffId});
+    } catch (error) {
+      console.error("Update failed", error);
+    }
   };
 
   return loading ? (
@@ -69,44 +68,47 @@ export const Register = () => {
         alignItems: "center",
         justifyContent: "center",
         height: "100vh",
-      }}>
+      }}
+    >
       <Flex align="center" gap="middle">
         <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
       </Flex>
     </div>
   ) : (
-    <>
-      <Form
-        {...layout}
-        name="nest-messages"
-        onFinish={onFinish}
-        style={{ maxWidth: 600 }}
-        validateMessages={validateMessages}>
-        <Form.Item
-          name={["firstName"]}
-          label="First name"
-          rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name={["lastName"]}
-          label="Last name"
-          rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name={["email"]}
-          label="Email"
-          rules={[{ type: "email", required: true }]}>
-          <Input />
-        </Form.Item>
+    <Form
+      {...layout}
+      name="nest-messages"
+      onFinish={onFinish}
+      style={{ maxWidth: 600 }}
+      validateMessages={validateMessages}
+    >
+      <Form.Item
+        name={["firstName"]}
+        label="First name"
+        rules={[{ required: true }]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        name={["lastName"]}
+        label="Last name"
+        rules={[{ required: true }]}
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item
+        name={["email"]}
+        label="Email"
+        rules={[{ type: "email", required: true }]}
+      >
+        <Input />
+      </Form.Item>
 
-        <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-        </Form.Item>
-      </Form>
-    </>
+      <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
+        <Button type="primary" htmlType="submit">
+          Submit
+        </Button>
+      </Form.Item>
+    </Form>
   );
 };

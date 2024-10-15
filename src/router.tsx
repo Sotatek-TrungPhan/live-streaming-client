@@ -9,11 +9,11 @@ export const router = createBrowserRouter([
         element: <AuthContextProvider><Outlet/></AuthContextProvider>,
         children: [
             {
-                path: '/information',
+                path: '/information/:liffId',
                 element: <Information/>
             },
             {
-                path: '/register',
+                path: '/register/:liffId',
                 element: <Register/>   
             }
         ]
