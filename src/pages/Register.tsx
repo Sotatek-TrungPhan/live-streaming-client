@@ -24,9 +24,9 @@ export const Register = () => {
   const { liffId } = useParams();
 
   const getProfile = async (accessToken: string) => {
-    const res = await axiosInstance.get(/member/${user?.userId}, {
+    const res = await axiosInstance.get(`member/${user?.userId}`, {
       headers: {
-        Authorization: Bearer ${accessToken},
+        Authorization: `Bearer ${accessToken}`,
       },
     });
     return res.data;
@@ -37,7 +37,7 @@ export const Register = () => {
       if (accessToken) {
         const res: any = await getProfile(accessToken).finally(() => setLoading(false));
         if (res.isRegistered) {
-          navigate(/information/${liffId});
+          navigate(`/information/${liffId}`);
         }
       }
     })();
@@ -46,15 +46,15 @@ export const Register = () => {
   const onFinish = async (values: any) => {
     try {
       await axiosInstance.patch(
-        /member/${user?.userId},
+        `member/${user?.userId}`,
         { ...values },
         {
           headers: {
-            Authorization: Bearer ${accessToken},
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      navigate(/information/${liffId});
+      navigate(`/information/${liffId}`);
     } catch (error) {
       console.error("Update failed", error);
     }
