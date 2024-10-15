@@ -26,12 +26,13 @@ export const Information = () => {
   };
 
   useEffect(() => {
-    if (accessToken) {
+    if (userInfo && !userInfo?.isRegistered) {
+        navigate(`/register/${liffId}`); // Fixed template string
+      }
+    if (accessToken && user) {
       getProfile(accessToken).finally(() => setLoading(false));
     }
-    if (user?.isRegistered) {
-      navigate(`/register/${liffId}`); // Fixed template string
-    }
+   
   }, [accessToken, liffId, userInfo]); // Added user?.isRegistered to dependencies
 
   return loading ? (
