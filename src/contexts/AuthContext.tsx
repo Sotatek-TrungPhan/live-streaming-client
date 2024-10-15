@@ -27,6 +27,7 @@ export const AuthContext = createContext<AuthContextType>({
 
 export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
   const [user, setUser] = useState<UserInfo | null>(null);
+  console.log('user:',user)
   const [authStatus, setAuthStatus] = useState<
     (typeof AUTH_STATUS)[keyof typeof AUTH_STATUS]
   >(AUTH_STATUS.UNAUTHORIZED);

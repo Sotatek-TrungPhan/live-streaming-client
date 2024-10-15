@@ -10,7 +10,7 @@ export const Information = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const getProfile = async (accessToken: string) => {
-    const res = await axiosInstance.get(`/member/${user?.memberId}`, {
+    const res = await axiosInstance.get(`/member/${user?.userId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

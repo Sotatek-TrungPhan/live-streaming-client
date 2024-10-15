@@ -34,7 +34,7 @@ export const Register = () => {
   useEffect(() => {
     (async () => {
       if (accessToken && user) {
-        const res: any = await getProfile(accessToken).finally(setLoading(false));
+        const res: any = await getProfile(accessToken).finally(()=>setLoading(false));
         console.log("res:", res);
         if (res.isRegistered) {
           navigate(`/information`);
